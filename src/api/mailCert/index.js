@@ -2,8 +2,9 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/", (req, res, next) => {
-  res.send("aaaaa");
-});
+const ctrl = require("./mailCert.ctrl");
+
+router.get("/", ctrl.getMailCert);
+router.post("/", ctrl.postMailCert);
 
 module.exports = router;
