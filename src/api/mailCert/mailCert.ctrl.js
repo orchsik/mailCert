@@ -1,6 +1,11 @@
 "use strict";
+const fs = require("fs");
+const path = require("path");
 
 const { smtpTransport } = require("../../lib/nodemailer");
+
+const emailContentFile = path.join(__dirname, "sample.html");
+const htmlstream = fs.createReadStream(emailContentFile);
 
 const getMailCert = (req, res) => {
   return res.send("zzzzz");
@@ -17,27 +22,19 @@ const postMailCert = async (req, res, next) => {
   const { toEmail } = req.body;
 
   const mailOptions = {
-    from: "김가네제삿날",
-    to: toEmail,
+    from: '"김가네제삿날 👻" <orchsik@naver.com>',
+    to: toEmail, // "bar@example.com, baz@example.com",
     subject: "[김가네제삿날]인증 관련 이메일 입니다",
-    text: "오른쪽 숫자 6자리를 입력해주세요 : " + number,
+    html: htmlstream,
+    // html: `<b>오른쪽 숫자 6자리를 입력해주세요 : ${number}</b>`, // html body
   };
 
-  const result = await smtpTransport.sendMail(mailOptions, (error, res) => {
-    if (error) {
-      res
-        .status(statusCode.OK)
-        .send(util.fail(statusCode.BAD_REQUEST, responseMsg.AUTH_EMAIL_FAIL));
-    } else {
-      /* 클라이언트에게 인증 번호를 보내서 사용자가 맞게 입력하는지 확인! */
-      res.status(statusCode.OK).send(
-        util.success(statusCode.OK, responseMsg.AUTH_EMAIL_SUCCESS, {
-          number: number,
-        })
-      );
-    }
-    smtpTransport.close();
-  });
+  try {
+    const info = await smtpTransport.sendMail(mailOptions);
+    console.log("Message sent:", info);
+  } catch (err) {
+    console.error("[postMailCert]", err);
+  }
 
   res.end();
 };
