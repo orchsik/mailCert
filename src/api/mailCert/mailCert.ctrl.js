@@ -2,7 +2,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const { smtpTransport } = require("../../lib/nodemailer");
+const {
+  naver_transport,
+  outlook_transporter,
+} = require("../../lib/nodemailer");
 
 const emailContentFile = path.join(__dirname, "sample.html");
 const htmlstream = fs.createReadStream(emailContentFile);
@@ -36,7 +39,7 @@ const postMailCert = async (req, res, next) => {
   const { toEmail } = req.body;
 
   const mailOptions = {
-    from: '"김가네제삿날 👻" <orchsik@naver.com>',
+    from: `김가네제삿날 👻 <${process.env.EMAIL}>`,
     to: toEmail, // "bar@example.com, baz@example.com",
     subject: "[김가네제삿날]인증 관련 이메일 입니다.",
     html: htmlFor(certCode),
@@ -44,11 +47,13 @@ const postMailCert = async (req, res, next) => {
   };
 
   try {
-    const info = await smtpTransport.sendMail(mailOptions);
-    // console.log("Message sent:", info);
+    const info = await outlook_transporter.sendMail(mailOptions);
+    console.log("Message sent:", info);
+
+    // return res.status(500).send("error test...");
     return res.status(200).json({ certCode });
   } catch (err) {
-    // console.error("[postMailCert]", err);
+    console.error("[postMailCert]", err);
     return res.status(500).send(err.message || "");
   }
 };
